@@ -1,0 +1,24 @@
+{
+    "meja": "1",
+    "pesanan": [
+        "Sate"
+    ],
+    "total_harga": 17000,
+    "kritik_saran": "Tidak ada",
+    "1": {
+        "pesanan": [
+            "Ayam Geprek"
+        ],
+        "total_harga": 10000,
+        "kritik_saran": "Tidak ada"
+    },
+    "meja1": {
+        "meja": "1",
+        "pesanan": [
+            "Sate",
+            "Ayam Geprek"
+        ],
+        "total_harga": 27000,
+        "kritik_saran": "Tidak ada"
+    }
+}

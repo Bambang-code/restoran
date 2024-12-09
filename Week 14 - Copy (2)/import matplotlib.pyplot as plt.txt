@@ -1,0 +1,231 @@
+import matplotlib.pyplot as plt
+from matplotlib.widgets import TextBox, Button
+import matplotlib.image as mpimg
+import pandas as pd
+
+# Membaca data pengguna dari file CSV
+csv_file = "users_data_final.csv"  # Pastikan file ini tersedia di lokasi yang sama dengan script
+df_users = pd.read_csv(csv_file)
+users = df_users.set_index('Username').T.to_dict('dict')
+
+# Fungsi untuk memeriksa login
+def check_login(event):
+    username = username_box.text
+    password = password_box.text
+
+    if username in users and users[username]['Password'] == password:
+        plt.close(fig_login)  # Tutup jendela login
+        role = users[username]['Role']
+        if role == 'Pelanggan':
+            show_pelanggan_interface()
+        elif role == 'Kasir':
+            show_kasir_interface()
+        elif role == 'Admin':
+            show_admin_interface()
+        else:
+            show_unknown_role()
+    else:
+        plt.close(fig_login)  # Tutup jendela login
+        show_failure_figure()
+
+# Fungsi untuk menampilkan halaman login berhasil namun dengan role tidak dikenali
+def show_unknown_role():
+    fig_unknown, ax_unknown = plt.subplots()
+    ax_unknown.text(0.5, 0.6, 'Role Tidak Dikenal!', fontsize=20, ha='center', va='center', color='red')
+    ax_unknown.axis('off')
+    plt.show()
+
+# Fungsi untuk menampilkan halaman login berhasil untuk Pelanggan
+def show_pelanggan_interface():
+    fig_pelanggan, ax_pelanggan = plt.subplots()
+    ax_pelanggan.axis('off')
+    ax_pelanggan.text(0.5, 0.9, 'Selamat Datang, Pelanggan!', fontsize=16, ha='center', va='center', fontweight='bold')
+    ax_pelanggan.text(0.5, 0.8, 'Silakan pilih menu untuk melakukan pemesanan.', fontsize=12, ha='center', va='center')
+    # Tambahkan fungsi pemesanan atau tampilkan menu pelanggan di sini
+    plt.show()
+
+# Fungsi untuk menampilkan halaman login berhasil untuk Kasir
+def show_kasir_interface():
+    fig_kasir, ax_kasir = plt.subplots()
+    ax_kasir.axis('off')
+    ax_kasir.text(0.5, 0.9, 'Selamat Datang, Kasir!', fontsize=16, ha='center', va='center', fontweight='bold')
+    ax_kasir.text(0.5, 0.8, 'Silakan proses pesanan yang masuk.', fontsize=12, ha='center', va='center')
+    # Tambahkan fungsi kasir seperti memproses pembayaran di sini
+    plt.show()
+
+# Fungsi untuk menampilkan halaman login berhasil untuk Admin
+def show_admin_interface():
+    fig_admin, ax_admin = plt.subplots()
+    ax_admin.axis('off')
+    ax_admin.text(0.5, 0.9, 'Selamat Datang, Admin!', fontsize=16, ha='center', va='center', fontweight='bold')
+    ax_admin.text(0.5, 0.8, 'Silakan kelola data pengguna atau lihat laporan penjualan.', fontsize=12, ha='center', va='center')
+    # Tambahkan fungsi admin seperti mengelola pengguna atau melihat laporan di sini
+    plt.show()
+
+# Fungsi untuk menampilkan halaman login gagal
+def show_failure_figure():
+    fig_fail, ax_fail = plt.subplots()
+    ax_fail.text(0.5, 0.6, 'Login Gagal!', fontsize=20, ha='center', va='center', color='red')
+    ax_fail.text(0.5, 0.4, 'Username atau Password salah.', fontsize=15, ha='center', va='center')
+    ax_fail.axis('off')
+    plt.show()
+
+# Buat antarmuka login menggunakan Matplotlib
+fig_login, ax_login = plt.subplots(figsize=(6, 4))
+fig_login.suptitle('Login Page', fontsize=16)
+
+ax_login.axis('off')  # Sembunyikan axis
+
+# Kotak input untuk username
+ax_username = plt.axes([0.3, 0.6, 0.4, 0.08])  # [left, bottom, width, height]
+username_box = TextBox(ax_username, 'Username: ', initial='')
+
+ax_password = plt.axes([0.3, 0.45, 0.4, 0.08])
+password_box = TextBox(ax_password, 'Password: ', initial='')
+
+
+# Tombol login
+ax_button = plt.axes([0.4, 0.3, 0.2, 0.1])
+button = Button(ax_button, 'Login')
+button.on_clicked(check_login)
+
+plt.show()
+
+# --------------------------- Menu Pemesanan untuk Pelanggan ---------------------------
+
+def menu_pelanggan():
+    # Inisialisasi counter dan harga
+    counter_items = {
+        'lag': 0, 'ljc': 0, 'ltp': 0, 'ntb': 0, 'nta': 0,
+        'ng': 0, 'ndt': 0, 'ag': 0, 'rl': 0, 'rk': 0,
+        'et': 0, 'el': 0, 'cc': 0, 'eb': 0, 'am': 0
+    }
+    harga_items = {
+        'lag': 12000, 'ljc': 10000, 'ltp': 10000, 'ntb': 10000, 'nta': 12000,
+        'ng': 8000, 'ndt': 10000, 'ag': 10000, 'rl': 9000, 'rk': 9000,
+        'et': 3000, 'el': 3000, 'cc': 3000, 'eb': 4000, 'am': 2500
+    }
+
+    # Fungsi untuk menangani klik tombol
+    def on_button_click(item_key):
+        counter_items[item_key] += 1
+        update_counter_text()
+
+    # Fungsi untuk memperbarui teks counter dan subtotal
+    def update_counter_text():
+        for key in counter_axes:
+            ax = counter_axes[key]
+            ax.clear()
+            if counter_items[key] > 0:
+                ax.text(0.5, 0.5, f"{counter_items[key]} x Rp {harga_items[key]:,}", fontsize=10, ha='center', va='center')
+            ax.axis('off')
+        
+        # Hitung subtotal
+        subtotal = sum(counter_items[key] * harga_items[key] for key in counter_items)
+        ax_subtotal.clear()
+        ax_subtotal.text(0.5, 0.5, f"Total: Rp {subtotal:,}", fontsize=14, ha='center', va='center', fontweight='bold')
+        ax_subtotal.axis('off')
+        plt.draw()
+
+    # Buat antarmuka pemesanan menggunakan Matplotlib
+    fig_menu, ax_menu = plt.subplots(figsize=(10, 8))
+    fig_menu.suptitle('Menu Pemesanan Pelanggan', fontsize=16, fontweight='bold')
+    ax_menu.axis('off')
+
+    # Menambahkan tombol untuk setiap item
+    items = [
+        ('lag', 'lag.jpg', 'Lalapan Ayam Goreng'),
+        ('ljc', 'ljc.jpg', 'Lalapan Jamur Crispy'),
+        ('ltp', 'ltp.jpg', 'Lalapan Tempe Penyet'),
+        ('ntb', 'ntb.jpg', 'Nasi Tempong Biasa'),
+        ('nta', 'nta.jpg', 'Nasi Tempong Ayam'),
+        ('ng', 'ng.jpg', 'Nasi Goreng'),
+        ('ndt', 'ndt.jpg', 'Nasi Dadar Telur'),
+        ('ag', 'ag.jpeg', 'Ayam Geprek'),
+        ('rl', 'rl.jpg', 'Rujak Lontong'),
+        ('rk', 'rk.jpg', 'Rujak Kulup'),
+        ('et', 'et.jpeg', 'Es Teh'),
+        ('el', 'el.jpeg', 'Es Lumut'),
+        ('cc', 'cc.jpeg', 'Cappucino Cincau'),
+        ('eb', 'eb.jpeg', 'Es Buah'),
+        ('am', 'am.jpeg', 'Air Mineral')
+    ]
+
+    # Posisi tombol berdasarkan grid sederhana
+    rows = 5
+    cols = 3
+    button_width = 0.2
+    button_height = 0.15
+    spacing_x = 0.05
+    spacing_y = 0.1
+    start_x = 0.05
+    start_y = 0.6
+
+    for idx, (key, img_path, name) in enumerate(items):
+        row = idx // cols
+        col = idx % cols
+        ax_button = plt.axes([start_x + col*(button_width + spacing_x), start_y - row*(button_height + spacing_y), button_width, button_height])
+        btn = Button(ax_button, label="", color='lightblue', hovercolor='deepskyblue')
+        try:
+            img = mpimg.imread(img_path)
+            ax_button.imshow(img)
+        except FileNotFoundError:
+            ax_button.text(0.5, 0.5, 'No Image', fontsize=8, ha='center', va='center')
+        ax_button.axis('off')  # Menyembunyikan axis
+        btn.on_clicked(lambda event, k=key: on_button_click(k))
+        # Nama di atas gambar
+        ax_button.text(0.5, 1.1, name, ha='center', va='bottom', transform=ax_button.transAxes, fontsize=8, fontweight='bold')
+
+    # Menyiapkan axes untuk jumlah dan harga per item
+    counter_axes = {}
+    for idx, key in enumerate(counter_items.keys()):
+        row = idx // cols
+        col = idx % cols
+        ax_counter = plt.axes([start_x + col*(button_width + spacing_x), start_y - row*(button_height + spacing_y) - 0.05, button_width, 0.05])
+        ax_counter.axis('off')
+        counter_axes[key] = ax_counter
+
+    # Menyiapkan axes untuk subtotal keseluruhan di kanan bawah
+    ax_subtotal = plt.axes([0.8, 0.05, 0.2, 0.05])
+    ax_subtotal.axis('off')
+
+    # Memperbarui teks counter dan subtotal awal
+    update_counter_text()
+
+    plt.show()
+
+# Fungsi untuk menampilkan interface Pelanggan dengan pemesanan
+def show_pelanggan_interface():
+    menu_pelanggan()
+
+# --------------------------- Akhir Menu Pemesanan untuk Pelanggan ---------------------------
+
+# Catatan:
+# Untuk fitur Kasir dan Admin, Anda dapat mengembangkan fungsi `show_kasir_interface()` dan `show_admin_interface()` sesuai kebutuhan.
+# Misalnya, Kasir dapat memiliki fungsi untuk melihat pesanan yang masuk, memproses pembayaran, dll.
+# Admin dapat mengelola data pengguna, melihat laporan penjualan, menambah atau menghapus menu, dll.
+
+# Contoh Pengembangan Interface Kasir:
+def kasir_pemesanan():
+    # Implementasikan fungsi untuk Kasir
+    fig_kasir, ax_kasir = plt.subplots(figsize=(8,6))
+    ax_kasir.axis('off')
+    ax_kasir.text(0.5, 0.9, 'Interface Kasir', fontsize=16, ha='center', va='center', fontweight='bold')
+    ax_kasir.text(0.5, 0.8, 'Fitur Kasir akan ditambahkan di sini.', fontsize=12, ha='center', va='center')
+    plt.show()
+
+def show_kasir_interface():
+    kasir_pemesanan()
+
+# Contoh Pengembangan Interface Admin:
+def admin_management():
+    # Implementasikan fungsi untuk Admin
+    fig_admin, ax_admin = plt.subplots(figsize=(8,6))
+    ax_admin.axis('off')
+    ax_admin.text(0.5, 0.9, 'Interface Admin', fontsize=16, ha='center', va='center', fontweight='bold')
+    ax_admin.text(0.5, 0.8, 'Fitur Admin akan ditambahkan di sini.', fontsize=12, ha='center', va='center')
+    plt.show()
+
+def show_admin_interface():
+    admin_management()
+
